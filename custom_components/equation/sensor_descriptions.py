@@ -8,8 +8,9 @@ from datetime import datetime
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntityDescription,
-    SensorStateClass,
+    SensorStateClass
 )
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.const import ENERGY_KILO_WATT_HOUR, POWER_WATT, TEMP_CELSIUS
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.typing import StateType
@@ -41,6 +42,14 @@ SENSOR_DESCRIPTIONS = [
         native_unit_of_measurement=TEMP_CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda radiator: radiator.temp_probe,
+        last_reset_fn=lambda radiator: None,
+    ),
+    # Window open sensor.
+    EquationSensorEntityDescription(
+        key="window_open",
+        name="Window Open",
+        device_class=BinarySensorDeviceClass.WINDOW,
+        value_fn=lambda radiator: radiator.windows_open_status,
         last_reset_fn=lambda radiator: None,
     ),
     # Energy usage in Kw/h.
