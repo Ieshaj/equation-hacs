@@ -1,9 +1,9 @@
-"""Update entity platform for Rointe devices."""
+"""Update entity platform for Equation devices."""
 from __future__ import annotations
 
 from abc import ABC
 
-from rointesdk.device import RointeDevice
+from equationsdk.device import EquationDevice
 
 from homeassistant.components.update import (
     UpdateDeviceClass,
@@ -16,8 +16,8 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
-from .coordinator import RointeDataUpdateCoordinator
-from .rointe_entity import RointeRadiatorEntity
+from .coordinator import EquationDataUpdateCoordinator
+from .equation_entity import EquationRadiatorEntity
 
 
 async def async_setup_entry(
@@ -26,23 +26,23 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the radiator sensors from the config entry."""
-    coordinator: RointeDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator: EquationDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
 
     # Register the Entity classes and platform on the coordinator.
     coordinator.add_entities_for_seen_keys(
         async_add_entities,
-        [RointeUpdateEntity],
+        [EquationUpdateEntity],
         "update",
     )
 
 
-class RointeUpdateEntity(RointeRadiatorEntity, UpdateEntity, ABC):
+class EquationUpdateEntity(EquationRadiatorEntity, UpdateEntity, ABC):
     """Update entity."""
 
     def __init__(
         self,
-        radiator: RointeDevice,
-        coordinator: RointeDataUpdateCoordinator,
+        radiator: EquationDevice,
+        coordinator: EquationDataUpdateCoordinator,
     ) -> None:
         """Init the update entity."""
 

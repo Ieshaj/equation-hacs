@@ -1,10 +1,10 @@
-"""Support for Rointe Climate."""
+"""Support for Equation Climate."""
 
 from __future__ import annotations
 
 from abc import ABC
 
-from rointesdk.device import RointeDevice
+from equationsdk.device import EquationDevice
 
 from homeassistant.components.climate import (
     PRESET_COMFORT,
@@ -27,7 +27,7 @@ from .const import (
     CMD_SET_TEMP,
     DOMAIN,
     LOGGER,
-    PRESET_ROINTE_ICE,
+    PRESET_EQUATION_ICE,
     RADIATOR_MODE_AUTO,
     RADIATOR_MODE_MANUAL,
     RADIATOR_PRESET_COMFORT,
@@ -37,29 +37,29 @@ from .const import (
     RADIATOR_TEMP_MIN,
     RADIATOR_TEMP_STEP,
 )
-from .coordinator import RointeDataUpdateCoordinator
-from .rointe_entity import RointeRadiatorEntity
+from .coordinator import EquationDataUpdateCoordinator
+from .equation_entity import EquationRadiatorEntity
 
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Set up the radiator climate entity from the config entry."""
-    coordinator: RointeDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator: EquationDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
 
     # Register the Entity classes and platform on the coordinator.
     coordinator.add_entities_for_seen_keys(
-        async_add_entities, [RointeHaClimate], "climate"
+        async_add_entities, [EquationHaClimate], "climate"
     )
 
 
-class RointeHaClimate(RointeRadiatorEntity, ClimateEntity, ABC):
+class EquationHaClimate(EquationRadiatorEntity, ClimateEntity, ABC):
     """Climate entity."""
 
     def __init__(
         self,
-        radiator: RointeDevice,
-        coordinator: RointeDataUpdateCoordinator,
+        radiator: EquationDevice,
+        coordinator: EquationDataUpdateCoordinator,
     ) -> None:
         """Init the Climate entity."""
 
@@ -152,7 +152,7 @@ class RointeHaClimate(RointeRadiatorEntity, ClimateEntity, ABC):
     @property
     def preset_modes(self) -> list[str]:
         """Return the available preset modes."""
-        return [PRESET_COMFORT, PRESET_ECO, PRESET_ROINTE_ICE]
+        return [PRESET_COMFORT, PRESET_ECO, PRESET_EQUATION_ICE]
 
     @property
     def hvac_mode(self) -> str:
@@ -192,7 +192,7 @@ class RointeHaClimate(RointeRadiatorEntity, ClimateEntity, ABC):
         if self._radiator.preset == RADIATOR_PRESET_COMFORT:
             return PRESET_COMFORT
         if self._radiator.preset == RADIATOR_PRESET_ICE:
-            return PRESET_ROINTE_ICE
+            return PRESET_EQUATION_ICE
 
         # Also captures "none" (man mode, temperature outside presets)
         return None

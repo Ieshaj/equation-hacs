@@ -1,0 +1,14 @@
+{
+  "domain": "equation",
+  "name": "Equation Heaters",
+  "config_flow": true,
+  "documentation": "https://www.home-assistant.io/integrations/equation",
+  "requirements": ["equation-sdk==1.0.1"],
+  "ssdp": [],
+  "zeroconf": [],
+  "homekit": {},
+  "dependencies": [],
+  "codeowners": ["@Ieshaj"],
+  "iot_class": "cloud_polling",
+  "version": "0.0.2"
+}

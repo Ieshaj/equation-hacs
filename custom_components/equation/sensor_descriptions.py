@@ -1,4 +1,4 @@
-"""Sensor descriptions for Rointe."""
+"""Sensor descriptions for Equation."""
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -14,27 +14,27 @@ from homeassistant.const import ENERGY_KILO_WATT_HOUR, POWER_WATT, TEMP_CELSIUS
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.typing import StateType
 
-from .device_manager import RointeDevice
+from .device_manager import EquationDevice
 
 
 @dataclass
-class RointeSensorEntityDescriptionMixin:
-    """Define a description mixin for Rointe sensor entities."""
+class EquationSensorEntityDescriptionMixin:
+    """Define a description mixin for Equation sensor entities."""
 
-    value_fn: Callable[[RointeDevice], StateType]
-    last_reset_fn: Callable[[RointeDevice], datetime | None]
+    value_fn: Callable[[EquationDevice], StateType]
+    last_reset_fn: Callable[[EquationDevice], datetime | None]
 
 
 @dataclass
-class RointeSensorEntityDescription(
-    SensorEntityDescription, RointeSensorEntityDescriptionMixin
+class EquationSensorEntityDescription(
+    SensorEntityDescription, EquationSensorEntityDescriptionMixin
 ):
-    """Define an object to describe Rointe sensor entities."""
+    """Define an object to describe Equation sensor entities."""
 
 
 SENSOR_DESCRIPTIONS = [
     # Current room temperature sensor (probe value).
-    RointeSensorEntityDescription(
+    EquationSensorEntityDescription(
         key="current_temperature",
         name="Current Temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
@@ -44,7 +44,7 @@ SENSOR_DESCRIPTIONS = [
         last_reset_fn=lambda radiator: None,
     ),
     # Energy usage in Kw/h.
-    RointeSensorEntityDescription(
+    EquationSensorEntityDescription(
         key="energy",
         name="Energy Consumption",
         device_class=SensorDeviceClass.ENERGY,
@@ -59,7 +59,7 @@ SENSOR_DESCRIPTIONS = [
         else None,
     ),
     # Effective power usage in W.
-    RointeSensorEntityDescription(
+    EquationSensorEntityDescription(
         key="power",
         name="Effective Power",
         device_class=SensorDeviceClass.POWER,

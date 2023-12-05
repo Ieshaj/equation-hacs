@@ -1,9 +1,9 @@
-"""A sensor for the current Rointe radiator temperature."""
+"""A sensor for the current Equation radiator temperature."""
 from __future__ import annotations
 
 from datetime import datetime
 
-from rointesdk.device import RointeDevice
+from equationsdk.device import EquationDevice
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -12,9 +12,9 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 
 from .const import DOMAIN
-from .coordinator import RointeDataUpdateCoordinator
-from .rointe_entity import RointeRadiatorEntity
-from .sensor_descriptions import SENSOR_DESCRIPTIONS, RointeSensorEntityDescription
+from .coordinator import EquationDataUpdateCoordinator
+from .equation_entity import EquationRadiatorEntity
+from .sensor_descriptions import SENSOR_DESCRIPTIONS, EquationSensorEntityDescription
 
 
 async def async_setup_entry(
@@ -23,23 +23,23 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the radiator sensors from the config entry."""
-    coordinator: RointeDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator: EquationDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
 
     coordinator.add_sensor_entities_for_seen_keys(
-        async_add_entities, SENSOR_DESCRIPTIONS, RointeGenericSensor
+        async_add_entities, SENSOR_DESCRIPTIONS, EquationGenericSensor
     )
 
 
-class RointeGenericSensor(RointeRadiatorEntity, SensorEntity):
+class EquationGenericSensor(EquationRadiatorEntity, SensorEntity):
     """Generic radiator sensor."""
 
-    entity_description: RointeSensorEntityDescription
+    entity_description: EquationSensorEntityDescription
 
     def __init__(
         self,
-        radiator: RointeDevice,
-        coordinator: RointeDataUpdateCoordinator,
-        description: RointeSensorEntityDescription,
+        radiator: EquationDevice,
+        coordinator: EquationDataUpdateCoordinator,
+        description: EquationSensorEntityDescription,
     ) -> None:
         """Initialize a generic sensor."""
         super().__init__(

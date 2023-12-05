@@ -1,9 +1,9 @@
-"""Config flow for Rointe Heaters integration."""
+"""Config flow for Equation Heaters integration."""
 from __future__ import annotations
 
 from typing import Any
 
-from rointesdk.rointe_api import RointeAPI
+from equationsdk.equation_api import EquationAPI
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -21,7 +21,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle the config flow for Rointe Heaters."""
+    """Handle the config flow for Equation Heaters."""
 
     VERSION = 1
 
@@ -41,13 +41,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 step_id="user", data_schema=STEP_USER_DATA_SCHEMA
             )
 
-        rointe_api = RointeAPI(user_input[CONF_USERNAME], user_input[CONF_PASSWORD])
+        equation_api = EquationAPI(user_input[CONF_USERNAME], user_input[CONF_PASSWORD])
 
         login_error_code = await self.hass.async_add_executor_job(
-            rointe_api.initialize_authentication
+            equation_api.initialize_authentication
         )
 
-        if not login_error_code.success or not rointe_api.is_logged_in():
+        if not login_error_code.success or not equation_api.is_logged_in():
             LOGGER.error(
                 "Error during authentication: %s", login_error_code.error_message
             )
@@ -58,7 +58,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
         installations_response = await self.hass.async_add_executor_job(
-            rointe_api.get_installations
+            equation_api.get_installations
         )
 
         if not installations_response.success:
@@ -117,6 +117,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_create_entry(
             title=self.step_user_installations[user_input[CONF_INSTALLATION]],
-            description="Rointe",
+            description="Equation",
             data=user_data,
         )

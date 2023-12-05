@@ -1,7 +1,7 @@
-"""The Rointe Heaters integration."""
+"""The Equation Heaters integration."""
 from __future__ import annotations
 
-from rointesdk.rointe_api import ApiResponse, RointeAPI
+from equationsdk.equation_api import ApiResponse, EquationAPI
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -15,35 +15,35 @@ from .const import (
     LOGGER,
     PLATFORMS,
 )
-from .coordinator import RointeDataUpdateCoordinator
-from .device_manager import RointeDeviceManager
+from .coordinator import EquationDataUpdateCoordinator
+from .device_manager import EquationDeviceManager
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Rointe Heaters from a config entry."""
+    """Set up Equation Heaters from a config entry."""
 
-    rointe_api = RointeAPI(entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD])
+    equation_api = EquationAPI(entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD])
 
-    # Login to the Rointe API.
+    # Login to the Equation API.
     login_result: ApiResponse = await hass.async_add_executor_job(
-        rointe_api.initialize_authentication
+        equation_api.initialize_authentication
     )
 
     if not login_result.success:
-        raise ConfigEntryNotReady("Unable to connect to the Rointe API")
+        raise ConfigEntryNotReady("Unable to connect to the Equation API")
 
-    rointe_device_manager = RointeDeviceManager(
+    equation_device_manager = EquationDeviceManager(
         username=entry.data[CONF_USERNAME],
         password=entry.data[CONF_PASSWORD],
         installation_id=entry.data[CONF_INSTALLATION],
         hass=hass,
-        rointe_api=rointe_api,
+        equation_api=equation_api,
     )
 
-    rointe_coordinator = RointeDataUpdateCoordinator(hass, rointe_device_manager)
+    equation_coordinator = EquationDataUpdateCoordinator(hass, equation_device_manager)
 
-    await rointe_coordinator.async_config_entry_first_refresh()
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = rointe_coordinator
+    await equation_coordinator.async_config_entry_first_refresh()
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = equation_coordinator
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
@@ -61,27 +61,27 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def init_device_manager(
     hass: HomeAssistant, entry: ConfigEntry
-) -> RointeDataUpdateCoordinator:
+) -> EquationDataUpdateCoordinator:
     """Initialize the device manager, API and coordinator."""
 
-    rointe_api = RointeAPI(entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD])
+    equation_api = EquationAPI(entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD])
 
     LOGGER.debug("Device manager: Logging in")
 
-    # Login to the Rointe API.
+    # Login to the Equation API.
     login_result: ApiResponse = await hass.async_add_executor_job(
-        rointe_api.initialize_authentication
+        equation_api.initialize_authentication
     )
 
     if not login_result.success:
-        raise ConfigEntryNotReady("Unable to connect to the Rointe API")
+        raise ConfigEntryNotReady("Unable to connect to the Equation API")
 
-    rointe_device_manager = RointeDeviceManager(
+    equation_device_manager = EquationDeviceManager(
         username=entry.data[CONF_USERNAME],
         password=entry.data[CONF_PASSWORD],
         installation_id=entry.data[CONF_INSTALLATION],
         hass=hass,
-        rointe_api=rointe_api,
+        equation_api=equation_api,
     )
 
-    return RointeDataUpdateCoordinator(hass, rointe_device_manager)
+    return EquationDataUpdateCoordinator(hass, equation_device_manager)

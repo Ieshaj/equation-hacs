@@ -1,10 +1,10 @@
-"""Provides the Rointe DataUpdateCoordinator."""
+"""Provides the Equation DataUpdateCoordinator."""
 from __future__ import annotations
 
 from datetime import timedelta
 from typing import Any
 
-from rointesdk.device import RointeDevice
+from equationsdk.device import EquationDevice
 
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
@@ -13,32 +13,32 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import DOMAIN, LOGGER, PLATFORMS
-from .device_manager import RointeDeviceManager
-from .sensor_descriptions import RointeSensorEntityDescription
+from .device_manager import EquationDeviceManager
+from .sensor_descriptions import EquationSensorEntityDescription
 
-ROINTE_API_REFRESH_INTERVAL = timedelta(seconds=60)
+EQUATION_API_REFRESH_INTERVAL = timedelta(seconds=60)
 
 
-class RointeDataUpdateCoordinator(DataUpdateCoordinator[dict[str, RointeDevice]]):
-    """Rointe data coordinator."""
+class EquationDataUpdateCoordinator(DataUpdateCoordinator[dict[str, EquationDevice]]):
+    """Equation data coordinator."""
 
     def __init__(
-        self, hass: HomeAssistant, device_manager: RointeDeviceManager
+        self, hass: HomeAssistant, device_manager: EquationDeviceManager
     ) -> None:
-        """Initialize Rointe data updater."""
+        """Initialize Equation data updater."""
         self.device_manager = device_manager
-        self.unregistered_keys: dict[str, dict[str, RointeDevice]] = {}
+        self.unregistered_keys: dict[str, dict[str, EquationDevice]] = {}
 
         super().__init__(
             hass,
             LOGGER,
             name=DOMAIN,
-            update_interval=ROINTE_API_REFRESH_INTERVAL,
+            update_interval=EQUATION_API_REFRESH_INTERVAL,
         )
 
         self.unregistered_keys = {platform: {} for platform in PLATFORMS}
 
-    async def _async_update_data(self) -> dict[str, RointeDevice]:
+    async def _async_update_data(self) -> dict[str, EquationDevice]:
         """Fetch data from API."""
 
         new_devices = await self.device_manager.update()
@@ -70,7 +70,7 @@ class RointeDataUpdateCoordinator(DataUpdateCoordinator[dict[str, RointeDevice]]
         Called from a platform's `async_setup_entry`.
         """
 
-        discovered_devices: dict[str, RointeDevice] = self.data
+        discovered_devices: dict[str, EquationDevice] = self.data
 
         if not discovered_devices:
             return
@@ -95,12 +95,12 @@ class RointeDataUpdateCoordinator(DataUpdateCoordinator[dict[str, RointeDevice]]
     def add_sensor_entities_for_seen_keys(
         self,
         async_add_entities: AddEntitiesCallback,
-        sensor_descriptions: list[RointeSensorEntityDescription],
+        sensor_descriptions: list[EquationSensorEntityDescription],
         sensor_constructor: type,
     ) -> None:
         """Add entities for new sensors from a list of entity descriptions."""
 
-        discovered_devices: dict[str, RointeDevice] = self.data
+        discovered_devices: dict[str, EquationDevice] = self.data
 
         if not discovered_devices:
             return
@@ -124,16 +124,16 @@ class RointeDataUpdateCoordinator(DataUpdateCoordinator[dict[str, RointeDevice]]
 
 
 @callback
-def device_update_info(hass: HomeAssistant, rointe_device: RointeDevice) -> None:
+def device_update_info(hass: HomeAssistant, equation_device: EquationDevice) -> None:
     """Update device registry info."""
 
-    LOGGER.debug("Updating device registry info for %s", rointe_device.name)
+    LOGGER.debug("Updating device registry info for %s", equation_device.name)
 
     dev_registry = device_registry.async_get(hass)
 
     if device := dev_registry.async_get_device(
-        identifiers={(DOMAIN, rointe_device.id)},
+        identifiers={(DOMAIN, equation_device.id)},
     ):
         dev_registry.async_update_device(
-            device.id, sw_version=rointe_device.firmware_version
+            device.id, sw_version=equation_device.firmware_version
         )

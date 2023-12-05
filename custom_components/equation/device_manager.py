@@ -1,4 +1,4 @@
-"""Rointe app data model."""
+"""Equation app data model."""
 
 from __future__ import annotations
 
@@ -6,11 +6,11 @@ import asyncio
 from datetime import datetime
 from typing import Any
 
-from rointesdk.device import RointeDevice, ScheduleMode
-from rointesdk.dto import EnergyConsumptionData
-from rointesdk.model import RointeProduct
-from rointesdk.rointe_api import ApiResponse, RointeAPI
-from rointesdk.utils import get_product_by_type_version
+from equationsdk.device import EquationDevice, ScheduleMode
+from equationsdk.dto import EnergyConsumptionData
+from equationsdk.model import EquationProduct
+from equationsdk.equation_api import ApiResponse, EquationAPI
+from equationsdk.utils import get_product_by_type_version
 
 from homeassistant.components.climate import PRESET_COMFORT, PRESET_ECO, HVACMode
 from homeassistant.core import HomeAssistant
@@ -20,19 +20,19 @@ from .const import (
     CMD_SET_PRESET,
     CMD_SET_TEMP,
     LOGGER,
-    PRESET_ROINTE_ICE,
+    PRESET_EQUATION_ICE,
     RADIATOR_DEFAULT_TEMPERATURE,
     RADIATOR_MODE_MANUAL,
     RADIATOR_PRESET_COMFORT,
     RADIATOR_PRESET_ECO,
     RADIATOR_PRESET_ICE,
     RADIATOR_PRESET_NONE,
-    ROINTE_SUPPORTED_DEVICES,
+    EQUATION_SUPPORTED_DEVICES,
 )
 
 
 def determine_latest_firmware(
-    device_data: dict[str, Any], fw_map: dict[RointeProduct, dict[str, str]]
+    device_data: dict[str, Any], fw_map: dict[EquationProduct, dict[str, str]]
 ) -> str | None:
     """Determine the latest FW available for a device."""
 
@@ -68,7 +68,7 @@ def determine_latest_firmware(
     return current_firmware
 
 
-class RointeDeviceManager:
+class EquationDeviceManager:
     """Device Manager."""
 
     def __init__(
@@ -77,28 +77,28 @@ class RointeDeviceManager:
         password: str,
         installation_id: str,
         hass: HomeAssistant,
-        rointe_api: RointeAPI,
+        equation_api: EquationAPI,
     ) -> None:
         """Initialize the device manager."""
         self.username = username
         self.password = password
         self.installation_id = installation_id
-        self.rointe_api = rointe_api
+        self.equation_api = equation_api
 
         self.hass = hass
         self.auth_token = None
         self.auth_token_expire_date: datetime | None = None
 
-        self.rointe_devices: dict[str, RointeDevice] = {}
+        self.equation_devices: dict[str, EquationDevice] = {}
 
     def _fail_all_devices(self):
         """Set all devices as unavailable."""
 
-        if self.rointe_devices:
-            for device in self.rointe_devices.values():
+        if self.equation_devices:
+            for device in self.equation_devices.values():
                 device.hass_available = False
 
-    async def update(self) -> dict[str, list[RointeDevice]]:
+    async def update(self) -> dict[str, list[EquationDevice]]:
         """Retrieve the devices from the user's installation.
 
         Returns a list of newly discovered devices.
@@ -108,7 +108,7 @@ class RointeDeviceManager:
 
         installation_devices_response: ApiResponse = (
             await self.hass.async_add_executor_job(
-                self.rointe_api.get_installation_devices, self.installation_id
+                self.equation_api.get_installation_devices, self.installation_id
             )
         )
 
@@ -121,7 +121,7 @@ class RointeDeviceManager:
             return {}
 
         user_device_ids: list[str] = installation_devices_response.data
-        discovered_devices: dict[str, list[RointeDevice]] = {}
+        discovered_devices: dict[str, list[EquationDevice]] = {}
 
         # device_id -> (base data future, energy data future)
         device_data_futures: dict[str, tuple[asyncio.Future, asyncio.Future]] = {}
@@ -129,7 +129,7 @@ class RointeDeviceManager:
 
         # Firmware data.
         firmware_map_future: asyncio.Future = self.hass.async_add_executor_job(
-            self.rointe_api.get_latest_firmware
+            self.equation_api.get_latest_firmware
         )
         pending_futures.append(firmware_map_future)
 
@@ -138,9 +138,9 @@ class RointeDeviceManager:
         for device_id in user_device_ids:
             LOGGER.debug("Found device ID: %s", device_id)
             futures = (
-                self.hass.async_add_executor_job(self.rointe_api.get_device, device_id),
+                self.hass.async_add_executor_job(self.equation_api.get_device, device_id),
                 self.hass.async_add_executor_job(
-                    self.rointe_api.get_latest_energy_stats, device_id
+                    self.equation_api.get_latest_energy_stats, device_id
                 ),
             )
 
@@ -155,7 +155,7 @@ class RointeDeviceManager:
 
         if firmware_map_response.success and firmware_map_response.data:
             firmware_map: dict[
-                RointeProduct, dict[str, str]
+                EquationProduct, dict[str, str]
             ] | None = firmware_map_response.data
         else:
             LOGGER.error(
@@ -181,7 +181,7 @@ class RointeDeviceManager:
             )
 
             if new_device:
-                self.rointe_devices[device_id] = new_device
+                self.equation_devices[device_id] = new_device
                 discovered_devices[new_device.id] = new_device
 
         return discovered_devices
@@ -191,8 +191,8 @@ class RointeDeviceManager:
         base_data_response: ApiResponse,
         device_id: str,
         energy_data_response: ApiResponse,
-        firmware_map: dict[RointeProduct, dict[str, str]] | None,
-    ) -> RointeDevice | None:
+        firmware_map: dict[EquationProduct, dict[str, str]] | None,
+    ) -> EquationDevice | None:
         """Process the data related to a single device."""
 
         LOGGER.debug("Processing data for device ID: %s", device_id)
@@ -207,8 +207,8 @@ class RointeDeviceManager:
             )
 
             # Mark the device as unavailable on our existing devices cache.
-            if device_id in self.rointe_devices:
-                self.rointe_devices[device_id].hass_available = False
+            if device_id in self.equation_devices:
+                self.equation_devices[device_id].hass_available = False
 
             return None
 
@@ -234,7 +234,7 @@ class RointeDeviceManager:
         energy_stats: EnergyConsumptionData,
         device_id: str,
         latest_fw: str | None,
-    ) -> RointeDevice:
+    ) -> EquationDevice:
         """Process a device from the API and add or update it.
 
         Return the device if it's new or None if it's an existing one.
@@ -247,9 +247,9 @@ class RointeDeviceManager:
             return None
 
         # Existing device, update it.
-        if device_id in self.rointe_devices:
+        if device_id in self.equation_devices:
 
-            target_device = self.rointe_devices[device_id]
+            target_device = self.equation_devices[device_id]
 
             if not target_device.hass_available:
                 LOGGER.debug("Restoring device %s", target_device.name)
@@ -267,31 +267,32 @@ class RointeDeviceManager:
         # New device.
         device_type = device_data["data"]["type"]
 
-        if device_type not in ROINTE_SUPPORTED_DEVICES:
-            LOGGER.warning("Ignoring Rointe device of type %s", device_type)
+        if device_type not in EQUATION_SUPPORTED_DEVICES:
+            LOGGER.warning("Ignoring Equation device of type %s", device_type)
             return None
 
         firmware_data = device_data.get("firmware", None)
         LOGGER.debug(
-            "Found new device %s [%s] - %s. FW: %s",
+            "Found new device %s [%s] - %s. FW: %s - %s",
             device_data_data.get("name", "N/A"),
             device_data_data.get("type", "N/A"),
             device_data_data.get("product_version", "N/A"),
             firmware_data.get("firmware_version_device", "N/A")
             if firmware_data
             else "N/A",
+            device_data,
         )
 
-        rointe_device = RointeDevice(
+        equation_device = EquationDevice(
             device_info=device_data,
             device_id=device_id,
             energy_data=energy_stats,
             latest_fw=latest_fw,
         )
 
-        return rointe_device
+        return equation_device
 
-    async def send_command(self, device: RointeDevice, command: str, arg) -> bool:
+    async def send_command(self, device: EquationDevice, command: str, arg) -> bool:
         """Send command to the device."""
 
         LOGGER.debug("Sending command [%s] to device ID [%s]", command, device.id)
@@ -308,11 +309,11 @@ class RointeDeviceManager:
         LOGGER.warning("Ignoring unsupported command: %s", command)
         return False
 
-    async def _set_device_temp(self, device: RointeDevice, new_temp: float) -> bool:
+    async def _set_device_temp(self, device: EquationDevice, new_temp: float) -> bool:
         """Set device temperature."""
 
         result: ApiResponse = await self.hass.async_add_executor_job(
-            self.rointe_api.set_device_temp, device, new_temp
+            self.equation_api.set_device_temp, device, new_temp
         )
 
         if not result.success:
@@ -336,11 +337,11 @@ class RointeDeviceManager:
 
         return True
 
-    async def _set_device_mode(self, device: RointeDevice, hvac_mode: str) -> bool:
+    async def _set_device_mode(self, device: EquationDevice, hvac_mode: str) -> bool:
         """Set the device hvac mode."""
 
         result = await self.hass.async_add_executor_job(
-            self.rointe_api.set_device_mode, device, hvac_mode
+            self.equation_api.set_device_mode, device, hvac_mode
         )
 
         if not result.success:
@@ -383,11 +384,11 @@ class RointeDeviceManager:
 
         return True
 
-    async def _set_device_preset(self, device: RointeDevice, preset: str) -> bool:
+    async def _set_device_preset(self, device: EquationDevice, preset: str) -> bool:
         """Set device preset mode."""
 
         result = await self.hass.async_add_executor_job(
-            self.rointe_api.set_device_preset, device, preset
+            self.equation_api.set_device_preset, device, preset
         )
 
         if not result.success:
@@ -404,7 +405,7 @@ class RointeDeviceManager:
             device.power = True
             device.mode = RADIATOR_MODE_MANUAL
             device.preset = RADIATOR_PRESET_ECO
-        elif preset == PRESET_ROINTE_ICE:
+        elif preset == PRESET_EQUATION_ICE:
             device.power = True
             device.mode = RADIATOR_MODE_MANUAL
             device.preset = RADIATOR_PRESET_ICE

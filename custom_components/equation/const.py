@@ -1,4 +1,4 @@
-"""Constants for the Rointe Heaters integration."""
+"""Constants for the Equation Heaters integration."""
 
 import logging
 
@@ -6,16 +6,16 @@ from homeassistant.const import Platform
 
 LOGGER = logging.getLogger(__package__)
 
-DOMAIN = "rointe"
+DOMAIN = "equation"
 DEVICE_DOMAIN = "climate"
 PLATFORMS: list[str] = [Platform.CLIMATE, Platform.SENSOR, Platform.UPDATE]
-CONF_USERNAME = "rointe_username"
-CONF_PASSWORD = "rointe_password"
-CONF_INSTALLATION = "rointe_installation"
+CONF_USERNAME = "equation_username"
+CONF_PASSWORD = "equation_password"
+CONF_INSTALLATION = "equation_installation"
 
-ROINTE_MANUFACTURER = "Rointe"
+EQUATION_MANUFACTURER = "Equation"
 
-ROINTE_SUPPORTED_DEVICES = ["radiator", "towel", "therm", "radiatorb", "oval_towel"]
+EQUATION_SUPPORTED_DEVICES = ["radiator", "towel", "therm"]
 
 CMD_SET_TEMP = "cmd_set_temp"
 CMD_SET_PRESET = "cmd_set_preset"
@@ -24,7 +24,7 @@ CMD_SET_HVAC_MODE = "cmd_set_hvac_mode"
 
 RADIATOR_DEFAULT_TEMPERATURE = 20
 
-PRESET_ROINTE_ICE = "Anti-frost"
+PRESET_EQUATION_ICE = "Anti-frost"
 
 RADIATOR_TEMP_STEP = 0.5
 RADIATOR_TEMP_MIN = 7.0

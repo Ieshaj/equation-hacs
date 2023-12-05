@@ -10,15 +10,15 @@
         "step": {
             "user": {
                 "data": {
-                    "rointe_password": "Password",
-                    "rointe_username": "Username"
+                    "equation_password": "Password",
+                    "equation_username": "Username"
                 },
-                "title": "Connect to Rointe Connect"
+                "title": "Connect to Equation Connect"
 
             },
             "installation": {
                 "data": {
-                    "rointe_installation": "Installations"
+                    "equation_installation": "Installations"
                 },
                 "title":"Select installation"
             }
