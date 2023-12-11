@@ -57,6 +57,7 @@ class EquationRadiatorEntity(EquationHAEntity):
             name=self._radiator.name,
             model=product_name,
             sw_version=self._radiator.firmware_version,
+            serial_number=self._radiator.serialnumber,
         )
 
     @property
