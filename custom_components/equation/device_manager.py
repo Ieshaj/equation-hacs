@@ -387,8 +387,26 @@ class EquationDeviceManager:
     async def _set_device_preset(self, device: EquationDevice, preset: str) -> bool:
         """Set device preset mode."""
 
+        device_power = device.power
+        device_mode = device.mode
+        device_preset = device.preset
+
+        # Update the device internal status
+        if preset == PRESET_COMFORT:
+            device_power = True
+            device_mode = RADIATOR_MODE_MANUAL
+            device_preset = RADIATOR_PRESET_COMFORT
+        elif preset == PRESET_ECO:
+            device_power = True
+            device_mode = RADIATOR_MODE_MANUAL
+            device_preset = RADIATOR_PRESET_ECO
+        elif preset == PRESET_EQUATION_ICE:
+            device_power = True
+            device_mode = RADIATOR_MODE_MANUAL
+            device_preset = RADIATOR_PRESET_ICE
+
         result = await self.hass.async_add_executor_job(
-            self.equation_api.set_device_preset, device, preset
+            self.equation_api.set_device_preset, device, device_preset
         )
 
         if not result.success:
@@ -397,17 +415,8 @@ class EquationDeviceManager:
             return False
 
         # Update the device internal status
-        if preset == PRESET_COMFORT:
-            device.power = True
-            device.mode = RADIATOR_MODE_MANUAL
-            device.preset = RADIATOR_PRESET_COMFORT
-        elif preset == PRESET_ECO:
-            device.power = True
-            device.mode = RADIATOR_MODE_MANUAL
-            device.preset = RADIATOR_PRESET_ECO
-        elif preset == PRESET_EQUATION_ICE:
-            device.power = True
-            device.mode = RADIATOR_MODE_MANUAL
-            device.preset = RADIATOR_PRESET_ICE
+        device.power = device_power
+        device.mode = device_mode
+        device.preset = device_preset
 
         return True
